@@ -7,158 +7,113 @@
 <title>MDM 密碼產生器</title>
 <style>
   :root {
-    --bg: #0f1420;
-    --card: #1a2032;
-    --card2: #222a40;
-    --line: #2d3550;
-    --text: #e8ecf6;
-    --muted: #8b93a9;
-    --accent: #5b8cff;
-    --accent2: #3fd0a0;
-    --danger: #ff6b6b;
+    --bg:#0f1420; --card:#1a2032; --card2:#222a40; --line:#2d3550;
+    --text:#e8ecf6; --muted:#8b93a9; --accent:#5b8cff; --accent2:#3fd0a0; --danger:#ff6b6b;
   }
   * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", system-ui, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 16px 48px; }
-  h1 { font-size: 22px; margin: 4px 0 2px; letter-spacing: .5px; }
-  .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-  .tab {
-    flex: 1; text-align: center;
-    background: var(--card2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 11px 4px;
-    font-size: 15px;
-    cursor: pointer; user-select: none;
-    transition: all .15s;
-  }
-  .tab.active { border-color: var(--accent); background: rgba(91,140,255,.14); color: var(--accent); font-weight: 600; }
-  .page { display: none; }
-  .page.active { display: block; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 18px 16px;
-    margin-bottom: 16px;
-  }
-  label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px 2px; }
-  input[type=text], input[type=search], select {
-    width: 100%;
-    background: var(--card2);
-    border: 1px solid var(--line);
-    color: var(--text);
-    border-radius: 10px;
-    padding: 12px 12px;
-    font-size: 16px;
-    outline: none;
-    transition: border-color .15s;
-  }
-  input:focus { border-color: var(--accent); }
-  .field { margin-bottom: 14px; }
-  .modes { display: flex; gap: 8px; }
-  .mode {
-    flex: 1; text-align: center;
-    background: var(--card2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 10px 4px;
-    font-size: 14px;
-    cursor: pointer; user-select: none;
-    transition: all .15s;
-  }
-  .mode.active { border-color: var(--accent); background: rgba(91,140,255,.14); color: var(--accent); }
-  button.gen {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent), #7aa0ff);
-    color: #fff; border: 0;
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 17px; font-weight: 600;
-    cursor: pointer; margin-top: 4px;
-  }
-  button.gen:active { transform: scale(.99); }
-  .result {
-    text-align: center;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 22px 16px;
-  }
-  .result .pw {
-    font-size: 44px; font-weight: 700; letter-spacing: 8px;
-    color: var(--accent2);
-    font-variant-numeric: tabular-nums;
-    margin: 4px 0; cursor: pointer;
-  }
-  .result .hint { color: var(--muted); font-size: 12px; }
-  .result.empty .pw { color: var(--muted); letter-spacing: 4px; font-size: 28px; }
-  .copied { color: var(--accent2); font-size: 12px; height: 16px; }
-  .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 8px; }
-  .foot { text-align: center; color: var(--muted); font-size: 11px; margin-top: 24px; line-height: 1.6; }
-  datalist { color: #000; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,"Segoe UI","Microsoft JhengHei",system-ui,sans-serif;
+    -webkit-tap-highlight-color:transparent; }
+  .wrap { max-width:480px; margin:0 auto; padding:20px 16px 48px; }
+  h1 { font-size:22px; margin:4px 0 2px; letter-spacing:.5px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tab { flex:1; text-align:center; background:var(--card2); border:1px solid var(--line);
+    border-radius:10px; padding:11px 4px; font-size:15px; cursor:pointer; user-select:none; transition:all .15s; }
+  .tab.active { border-color:var(--accent); background:rgba(91,140,255,.14); color:var(--accent); font-weight:600; }
+  .page { display:none; } .page.active { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 16px; margin-bottom:16px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:0 0 6px 2px; }
+  input[type=text], input[type=search], input[type=tel] { width:100%; background:var(--card2);
+    border:1px solid var(--line); color:var(--text); border-radius:10px; padding:12px; font-size:16px; outline:none; transition:border-color .15s; }
+  input:focus { border-color:var(--accent); }
+  .field { margin-bottom:14px; }
+  .modes { display:flex; gap:8px; }
+  .mode { flex:1; text-align:center; background:var(--card2); border:1px solid var(--line);
+    border-radius:10px; padding:10px 4px; font-size:14px; cursor:pointer; user-select:none; transition:all .15s; }
+  .mode.active { border-color:var(--accent); background:rgba(91,140,255,.14); color:var(--accent); }
+  button.gen { width:100%; background:linear-gradient(135deg,var(--accent),#7aa0ff); color:#fff; border:0;
+    border-radius:12px; padding:15px; font-size:17px; font-weight:600; cursor:pointer; margin-top:4px; }
+  button.gen:disabled { opacity:.5; cursor:default; }
+  button.gen:active { transform:scale(.99); }
+  .result { text-align:center; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 16px; }
+  .result .pw { font-size:44px; font-weight:700; letter-spacing:8px; color:var(--accent2);
+    font-variant-numeric:tabular-nums; margin:4px 0; cursor:pointer; }
+  .result .hint { color:var(--muted); font-size:12px; }
+  .result.empty .pw { color:var(--muted); letter-spacing:4px; font-size:28px; }
+  .copied { color:var(--accent2); font-size:12px; height:16px; }
+  .err { color:var(--danger); font-size:13px; min-height:18px; margin-top:8px; }
+  .ok { color:var(--accent2); font-size:13px; min-height:18px; margin-top:8px; }
+  .foot { text-align:center; color:var(--muted); font-size:11px; margin-top:24px; line-height:1.6; }
+  datalist { color:#000; }
+  .who { color:var(--muted); font-size:12px; margin-bottom:12px; }
+  .linkbtn { background:none; border:0; color:var(--accent); font-size:12px; cursor:pointer; padding:0; }
 
-  /* QR search */
-  .qrhint { color: var(--muted); font-size: 12px; margin: 2px 2px 10px; }
-  #qrList { display: flex; flex-direction: column; gap: 10px; }
-  .qrItem {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 12px; padding: 10px; cursor: pointer;
-    transition: border-color .15s;
-  }
-  .qrItem:active { border-color: var(--accent); }
-  .qrItem img {
-    width: 64px; height: 64px; object-fit: cover;
-    border-radius: 8px; background: #fff; flex: none;
-  }
-  .qrItem .lbl { font-size: 14px; line-height: 1.4; }
-  .qrEmpty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
-  .qrCount { color: var(--muted); font-size: 12px; margin: 8px 2px; }
+  .qrhint { color:var(--muted); font-size:12px; margin:2px 2px 10px; }
+  #qrList { display:flex; flex-direction:column; gap:10px; }
+  .qrItem { display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:10px; cursor:pointer; transition:border-color .15s; }
+  .qrItem:active { border-color:var(--accent); }
+  .qrItem img { width:64px; height:64px; object-fit:cover; border-radius:8px; background:#fff; flex:none; }
+  .qrItem .lbl { font-size:14px; line-height:1.4; }
+  .qrEmpty { color:var(--muted); font-size:13px; text-align:center; padding:20px 0; }
+  .qrCount { color:var(--muted); font-size:12px; margin:8px 2px; }
 
-  /* lightbox */
-  #lb {
-    position: fixed; inset: 0; z-index: 50;
-    background: rgba(0,0,0,.92);
-    display: none; flex-direction: column;
-  }
-  #lb.open { display: flex; }
-  #lbBar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 14px; gap: 10px;
-  }
-  #lbTitle { font-size: 14px; color: #fff; flex: 1; line-height: 1.4; }
-  #lbClose {
-    background: rgba(255,255,255,.14); color: #fff; border: 0;
-    border-radius: 10px; padding: 8px 14px; font-size: 15px; cursor: pointer; flex: none;
-  }
-  #lbScroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; text-align: center; }
-  #lbImg { max-width: none; width: 100%; display: block; }
-  #lbUse {
-    margin: 12px auto; display: block;
-    background: var(--accent); color: #fff; border: 0;
-    border-radius: 10px; padding: 11px 18px; font-size: 15px; cursor: pointer;
-  }
+  /* gate */
+  #gate { position:fixed; inset:0; z-index:40; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; }
+  #gate .box { width:100%; max-width:380px; }
+  #gate h2 { font-size:20px; margin:0 0 6px; }
+  #gate .desc { color:var(--muted); font-size:13px; margin-bottom:18px; line-height:1.6; }
+  .step { display:none; } .step.active { display:block; }
+  #app { display:none; } #app.ready { display:block; }
+
+  #lb { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.92); display:none; flex-direction:column; }
+  #lb.open { display:flex; }
+  #lbBar { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; gap:10px; }
+  #lbTitle { font-size:14px; color:#fff; flex:1; line-height:1.4; }
+  #lbClose { background:rgba(255,255,255,.14); color:#fff; border:0; border-radius:10px; padding:8px 14px; font-size:15px; cursor:pointer; flex:none; }
+  #lbScroll { flex:1; overflow:auto; -webkit-overflow-scrolling:touch; text-align:center; }
+  #lbImg { max-width:none; width:100%; display:block; }
+  #lbUse { margin:12px auto; display:block; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:11px 18px; font-size:15px; cursor:pointer; }
 </style>
 </head>
 <body>
+
+<!-- 使用前驗證 -->
+<div id="gate">
+  <div class="box">
+    <h2>使用前驗證</h2>
+    <div class="desc">本工具限授權裝置使用。請輸入身分並送出，系統會通知管理者；管理者點信中「確定授權」後，這台裝置即可使用（之後只有這台裝置能用）。</div>
+
+    <div class="step active" id="step1">
+      <div class="field">
+        <label for="who">你是誰</label>
+        <input type="text" id="who" autocomplete="off" placeholder="輸入你的名字或單位" />
+      </div>
+      <button class="gen" id="sendCode">送出授權申請</button>
+      <div class="err" id="gateErr1"></div>
+    </div>
+
+    <div class="step" id="step2">
+      <div class="desc">已送出授權申請到管理者信箱。請管理者打開信件、點「確定授權」按鈕。授權後此畫面會自動解鎖。</div>
+      <div class="ok" id="waitState">等待授權中…</div>
+      <div style="margin-top:12px"><button class="linkbtn" id="backStep1">重新輸入身分 / 重新申請</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 主程式 -->
+<div id="app">
 <div class="wrap">
   <h1>MDM 密碼產生器</h1>
-  <div class="sub">離線計算密碼，並可用名稱搜尋營區 QR 圖。</div>
+  <div class="sub">已綁定授權裝置。密碼由伺服器計算。</div>
+  <div class="who" id="whoLine"></div>
 
   <div class="tabs">
     <div class="tab active" data-tab="gen">密碼產生</div>
     <div class="tab" data-tab="qr">QR 搜尋</div>
   </div>
 
-  <!-- 密碼產生 -->
   <div class="page active" id="page-gen">
     <div class="card">
       <div class="field">
@@ -189,7 +144,6 @@
     </div>
   </div>
 
-  <!-- QR 搜尋 -->
   <div class="page" id="page-qr">
     <div class="field">
       <input type="search" id="qrSearch" autocomplete="off" placeholder="輸入營區關鍵字，例如 中科院、龍泉" />
@@ -200,67 +154,110 @@
   </div>
 
   <div class="foot">
-    純前端運算 · 資料不離開裝置<br />
-    營區 QR 共 <span id="cnt">0</span> 筆
+    演算法於伺服器端運算 · 僅授權裝置可用<br />
+    營區 QR 共 <span id="cnt">0</span> 筆 · <button class="linkbtn" id="unbind">解除本裝置綁定</button>
   </div>
 </div>
+</div>
 
-<!-- lightbox -->
 <div id="lb">
-  <div id="lbBar">
-    <div id="lbTitle"></div>
-    <button id="lbClose">關閉</button>
-  </div>
-  <div id="lbScroll">
-    <img id="lbImg" alt="" />
-    <button id="lbUse">用此營區名稱產生密碼</button>
-  </div>
+  <div id="lbBar"><div id="lbTitle"></div><button id="lbClose">關閉</button></div>
+  <div id="lbScroll"><img id="lbImg" alt="" /><button id="lbUse">用此營區名稱產生密碼</button></div>
 </div>
 
 <script>
-const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const SUFFIX = { unlock: "wdQ31H", uninstall: "Un5fp7", location: "showMapwdQ31H" };
-const QR = [{"i":1,"l":"航勤廠"},{"i":2,"l":"網寮南營區 39化"},{"i":3,"l":"249旅 斗煥坪營區 龍門營區"},{"i":4,"l":"紅柴林營區"},{"i":5,"l":"竹坑營區"},{"i":6,"l":"左營02"},{"i":7,"l":"成功營區 東引"},{"i":8,"l":"湖口營區"},{"i":9,"l":"建國營區 陸軍專科學校 陸專 專校"},{"i":10,"l":"崎頂營區 步兵101旅"},{"i":11,"l":"知義營區 54工兵群"},{"i":12,"l":"步兵109旅 太平里營區"},{"i":13,"l":"坑子口營區 裝訓部 安卓"},{"i":14,"l":"坑子口營區 裝訓部 iOS"},{"i":15,"l":"金六結"},{"i":16,"l":"岡山基地"},{"i":17,"l":"工訓中心 燕巢"},{"i":18,"l":"福西營區 憲239"},{"i":19,"l":"通基廠"},{"i":20,"l":"大直營區"},{"i":21,"l":"333旅"},{"i":22,"l":"二支部"},{"i":23,"l":"空軍忠勇營區"},{"i":24,"l":"成功嶺"},{"i":25,"l":"269旅"},{"i":26,"l":"五支部"},{"i":27,"l":"黃埔營區"},{"i":28,"l":"太平營區"},{"i":29,"l":"太平營區"},{"i":30,"l":"太平營區"},{"i":31,"l":"高保廠"},{"i":32,"l":"陸軍裝甲586旅"},{"i":33,"l":"雙連坡"},{"i":34,"l":"十軍團"},{"i":35,"l":"陸戰66旅"},{"i":36,"l":"陸戰99旅"},{"i":37,"l":"聯訓基地所有營區通用"},{"i":38,"l":"淡海營區"},{"i":39,"l":"台中廠"},{"i":40,"l":"後訓 漢陽營區"},{"i":41,"l":"八軍團"},{"i":42,"l":"內角營區"},{"i":43,"l":"206旅"},{"i":44,"l":"澎防部 一支部"},{"i":45,"l":"四聯隊"},{"i":46,"l":"中坑營區"},{"i":47,"l":"空軍單位MDM"},{"i":48,"l":"後訓 育勤營區"},{"i":49,"l":"光育營區"},{"i":50,"l":"台東鑑測站"},{"i":51,"l":"屏東基地"},{"i":52,"l":"麗陽營區"},{"i":53,"l":"博愛營區"},{"i":54,"l":"中科院"},{"i":55,"l":"空軍航校"},{"i":56,"l":"運輸兵群北大營區"},{"i":57,"l":"137旅"},{"i":58,"l":"陸軍專科學校"},{"i":59,"l":"空軍官校"},{"i":60,"l":"通校"},{"i":61,"l":"砲校 湯山營區"},{"i":62,"l":"三軍聯訓基地"},{"i":63,"l":"龍泉營區 陸訓中心"},{"i":64,"l":"歸仁營區"},{"i":65,"l":"復興崗營區"},{"i":66,"l":"左營20"},{"i":67,"l":"601旅"},{"i":68,"l":"第五地區支援指揮部 東興彈藥庫"},{"i":69,"l":"步校"},{"i":70,"l":"龍翔營區"},{"i":71,"l":"北測中心"},{"i":72,"l":"257旅"},{"i":73,"l":"加祿堂營區"},{"i":74,"l":"空軍松山指揮部 松南營區"},{"i":75,"l":"岳崙營區"},{"i":76,"l":"空軍防砲順練中心"},{"i":77,"l":"步校"},{"i":78,"l":"CCK營區"},{"i":79,"l":"左營17"},{"i":80,"l":"官田營區"},{"i":81,"l":"二重溪營區"},{"i":82,"l":"南測中心"},{"i":83,"l":"銀河營區"},{"i":84,"l":"忠勤營區"},{"i":85,"l":"航技學院"},{"i":86,"l":"步訓部"},{"i":87,"l":"陸軍通基廠營區"},{"i":88,"l":"陸軍步兵訓練指揮部"},{"i":89,"l":"砲測中心"},{"i":90,"l":"光隆52群"},{"i":91,"l":"後訓中心 漢陽 光育"},{"i":92,"l":"七星崗 后里營區 油池營區"},{"i":93,"l":"砲測中心"},{"i":94,"l":"虎峰"},{"i":95,"l":"圳堵營區"},{"i":96,"l":"後備斗煥坪 後備斗煥坪新訓中心"},{"i":97,"l":"慧敏營區 憲兵205指揮部 安卓"},{"i":98,"l":"慧敏營區 憲兵205指揮部 iOS"},{"i":99,"l":"忠愛營區 國防部後備指揮部"},{"i":100,"l":"康寧營區"},{"i":101,"l":"成功營區 東引指揮部"},{"i":102,"l":"台北廠"},{"i":103,"l":"國防大學校本部 率真校區"},{"i":104,"l":"564旅 天山營區 小岡山營區 嘉興營區"},{"i":105,"l":"四支部04 衛生營 支援隊"},{"i":106,"l":"四支部04 衛生營 支援隊"},{"i":107,"l":"台南基地 空軍第一聯隊"},{"i":108,"l":"長安營區 空軍防空砲兵指揮部"},{"i":109,"l":"中正嶺 國防大學理工學院"},{"i":110,"l":"知義營區 54工兵群 137旅"},{"i":111,"l":"田沃南營區 馬防部莒光守備大隊"},{"i":112,"l":"101旅 崎頂營區 精忠營區 成功嶺"},{"i":113,"l":"步兵109旅 太平里營區 龍華營區"},{"i":114,"l":"網寮南營區 39化學群"},{"i":115,"l":"空軍第七聯隊 台東基地"},{"i":116,"l":"航勤廠"},{"i":117,"l":"前山營區 關指部"},{"i":118,"l":"屏東基地 空軍第六聯隊 空訓中心 空軍第一後勤指揮部"},{"i":119,"l":"584旅 湖南營區 犁頭山營區 凌雲崗營區"},{"i":120,"l":"584旅 湖南營區 犁頭山營區 凌雲崗營區"},{"i":121,"l":"空軍第二聯隊 新竹基地 新竹油庫"},{"i":122,"l":"空軍馬基隊 馬公基地"},{"i":123,"l":"南埔營區 空軍第三後勤指揮部"},{"i":124,"l":"蘭指部 紅柴林營區"},{"i":125,"l":"關指部 后山營區"},{"i":126,"l":"坑子口營區 裝訓部 iOS"},{"i":127,"l":"坑子口營區 裝訓部 安卓"},{"i":128,"l":"武漢營區 特指部"},{"i":129,"l":"空軍官校 岡山基地"},{"i":130,"l":"新店東營區 關指部"},{"i":131,"l":"岡山基地 國軍空勤人員求生訓練中心 空軍官校"},{"i":132,"l":"台北福西營區 憲239營"},{"i":133,"l":"53工兵群 龍蟠營區 龍華營區"},{"i":134,"l":"空軍航空技術學校 航技學院"},{"i":135,"l":"台北廠 新店西營區"},{"i":136,"l":"馬防部南竿守備大隊 雲台山營區"},{"i":137,"l":"空軍松山指揮部 空軍氣象聯隊 松南營區"},{"i":138,"l":"湖口營區 542旅 584一營 天準 湖口廠"},{"i":139,"l":"竹坑營區 36化學兵群 234旅"},{"i":140,"l":"空軍司令部 忠勇營區"},{"i":141,"l":"二四九旅 斗煥坪營區 龍門營區"},{"i":142,"l":"嘉義基地 空軍第四聯隊"},{"i":143,"l":"602旅 龍翔營區"},{"i":144,"l":"馬防部北竿守備大隊 壁山營區"},{"i":145,"l":"馬防部北竿守備大隊 壁山營區"},{"i":146,"l":"工訓中心 金陵營區"},{"i":147,"l":"四支部03 台南廠"},{"i":148,"l":"淡海營區 海軍海洋監偵指揮部"},{"i":149,"l":"空軍教準部 空軍基地訓練指揮部 佳山基地"},{"i":150,"l":"中興嶺"},{"i":151,"l":"左營17"},{"i":152,"l":"153旅 金六結營區"},{"i":153,"l":"大直營區"},{"i":154,"l":"左營20 海軍陸戰隊學校"},{"i":155,"l":"兵整中心 岳崗營區"},{"i":156,"l":"五支部"},{"i":157,"l":"東海營區 蘇支部"},{"i":158,"l":"五支部東興彈藥庫"},{"i":159,"l":"左營02"},{"i":160,"l":"333旅 萬金營區"},{"i":161,"l":"203旅 官田營區"},{"i":162,"l":"新田營區 台中廠"},{"i":163,"l":"北大營區 5支部運輸群"},{"i":164,"l":"北測中心 通測中心 584旅2營"},{"i":165,"l":"北測中心 通測中心 584旅2營"},{"i":166,"l":"北測中心 通測中心 584旅2營"},{"i":167,"l":"二重溪 三軍聯訓基地所有營區 海口 茄湖 仁壽 保力 北門"},{"i":168,"l":"步訓部"},{"i":169,"l":"四支部01 高保廠 四支部運輸群 嶺口營區"},{"i":170,"l":"海軍陸戰隊66旅"},{"i":171,"l":"海軍陸戰隊99旅"},{"i":172,"l":"銀河營區 飛彈光電基地勤務廠"},{"i":173,"l":"清泉崗營區 234旅"},{"i":174,"l":"後訓中心技勤分部 光育營區"},{"i":175,"l":"陸訓中心 龍泉新訓中心"},{"i":176,"l":"歸仁營區 特指部飛訓部 航勤廠"},{"i":177,"l":"52工兵群 光隆營區"},{"i":178,"l":"空軍所有營區"},{"i":179,"l":"空軍所有營區"},{"i":180,"l":"137旅大內營區"},{"i":181,"l":"特訓中心 麗陽營區"},{"i":182,"l":"269旅 高山頂營區 金龍營區"},{"i":183,"l":"269旅 高山頂營區 金龍營區"},{"i":184,"l":"269旅 高山頂營區 金龍營區"},{"i":185,"l":"中科院 所有院區都通用"},{"i":186,"l":"中科院 所有院區都通用"},{"i":187,"l":"中科院 所有院區都通用"},{"i":188,"l":"花防部 南美崙營區"},{"i":189,"l":"博愛營區 國防部"},{"i":190,"l":"通訓中心 虎嶺營區"},{"i":191,"l":"砲訓部 湯山營區"},{"i":192,"l":"黃埔營區 北-陸軍官校 南-117旅"},{"i":193,"l":"育勤營區 後訓中心補給 運輸 中壢分庫 桃園油庫"},{"i":194,"l":"後訓中心 漢陽營區"},{"i":195,"l":"大漢營區 陸軍司令部 教準部"},{"i":196,"l":"龍陵營區 21砲 駕訓連 雙連坡"},{"i":197,"l":"十軍團 興中營區"},{"i":198,"l":"岳崙營區 陸軍汽機廠"},{"i":199,"l":"東指部 東保廠"},{"i":200,"l":"東指部 東保廠"},{"i":201,"l":"CCK營區 空軍第三聯隊"},{"i":202,"l":"CCK營區 空軍第三聯隊"},{"i":203,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":204,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":205,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":206,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":207,"l":"陸軍專科學校 建國營區"},{"i":208,"l":"空軍防空砲兵訓練中心 加祿堂"},{"i":209,"l":"空軍防空砲兵訓練中心 加祿堂"},{"i":210,"l":"南測中心 無人機訓練中心 內角營區"},{"i":211,"l":"八軍團 泰山營區"},{"i":212,"l":"二支部"},{"i":213,"l":"澎防部 一支部"},{"i":214,"l":"58砲指部 圳堵營區"},{"i":215,"l":"58砲指部 圳堵營區"},{"i":216,"l":"龍城營區 601旅"},{"i":217,"l":"關西營區 犁頭山營區 206旅"},{"i":218,"l":"關西營區 犁頭山營區 206旅"},{"i":219,"l":"復興崗 國防大學 政戰 管理 心戰大隊 政訓中心"},{"i":220,"l":"內壢營區 陸軍通基廠"},{"i":221,"l":"砲測中心 大埔營區 梅林 埔尾 內灣 大埔"},{"i":222,"l":"忠勤營區 陸軍後勤指揮部"},{"i":223,"l":"中坑營區 257旅"},{"i":224,"l":"586旅 七星崗營區 厚里南營區 西屯平營區"},{"i":225,"l":"586旅 七星崗營區 厚里南營區 西屯平營區"},{"i":226,"l":"金六結營區"},{"i":227,"l":"岳崗營區"},{"i":228,"l":"43砲指部 仁美營區 考潭營區"},{"i":229,"l":"43砲指部 仁美營區 考潭營區"},{"i":230,"l":"龍翔營區 602旅"},{"i":231,"l":"太武營區 金防部 海龍儲訓隊"},{"i":232,"l":"後備 光隆 台中旅"},{"i":233,"l":"後備 光隆 台中旅"},{"i":234,"l":"後備 光隆 台中旅"},{"i":235,"l":"高雄旅 後備旅 鳳雄營區"},{"i":236,"l":"高雄旅 後備旅 鳳雄營區"},{"i":237,"l":"花崗營區 化訓中心"},{"i":238,"l":"忠勇營區 松南營區 空軍官校 空軍航空技術學校 空軍第一聯隊 馬基隊 空軍第二聯隊 空軍第三聯隊 空軍第四聯隊 空軍第五聯隊 空軍第六混合聯隊 空軍第七聯隊"},{"i":239,"l":"第四聯隊"},{"i":240,"l":"岡山基地"},{"i":241,"l":"金湯營區 陸軍步兵學校金湯營區"},{"i":242,"l":"四支部02 運輸群"},{"i":243,"l":"四支部02 運輸群"},{"i":244,"l":"堅貞營區 憲兵訓練中心"},{"i":245,"l":"柴山要塞 海軍陸戰隊防空警衛群 海洋監偵部第二中隊壽山雷達站"},{"i":246,"l":"龍游營區 陸軍73通資群 龍崗副工站"}]; // [{i:id, l:label}]
+const API = "https://mdlevoygfciwzlqtsids.supabase.co/functions/v1/api";
+const QR = [{"i":1,"l":"航勤廠"},{"i":2,"l":"網寮南營區 39化"},{"i":3,"l":"249旅 斗煥坪營區 龍門營區"},{"i":4,"l":"紅柴林營區"},{"i":5,"l":"竹坑營區"},{"i":6,"l":"左營02"},{"i":7,"l":"成功營區 東引"},{"i":8,"l":"湖口營區"},{"i":9,"l":"建國營區 陸軍專科學校 陸專 專校"},{"i":10,"l":"崎頂營區 步兵101旅"},{"i":11,"l":"知義營區 54工兵群"},{"i":12,"l":"步兵109旅 太平里營區"},{"i":13,"l":"坑子口營區 裝訓部 安卓"},{"i":14,"l":"坑子口營區 裝訓部 iOS"},{"i":15,"l":"金六結"},{"i":16,"l":"岡山基地"},{"i":17,"l":"工訓中心 燕巢"},{"i":18,"l":"福西營區 憲239"},{"i":19,"l":"通基廠"},{"i":20,"l":"大直營區"},{"i":21,"l":"333旅"},{"i":22,"l":"二支部"},{"i":23,"l":"空軍忠勇營區"},{"i":24,"l":"成功嶺"},{"i":25,"l":"269旅"},{"i":26,"l":"五支部"},{"i":27,"l":"黃埔營區"},{"i":28,"l":"太平營區"},{"i":29,"l":"太平營區"},{"i":30,"l":"太平營區"},{"i":31,"l":"高保廠"},{"i":32,"l":"陸軍裝甲586旅"},{"i":33,"l":"雙連坡"},{"i":34,"l":"十軍團"},{"i":35,"l":"陸戰66旅"},{"i":36,"l":"陸戰99旅"},{"i":37,"l":"聯訓基地所有營區通用"},{"i":38,"l":"淡海營區"},{"i":39,"l":"台中廠"},{"i":40,"l":"後訓 漢陽營區"},{"i":41,"l":"八軍團"},{"i":42,"l":"內角營區"},{"i":43,"l":"206旅"},{"i":44,"l":"澎防部 一支部"},{"i":45,"l":"四聯隊"},{"i":46,"l":"中坑營區"},{"i":47,"l":"空軍單位MDM"},{"i":48,"l":"後訓 育勤營區"},{"i":49,"l":"光育營區"},{"i":50,"l":"台東鑑測站"},{"i":51,"l":"屏東基地"},{"i":52,"l":"麗陽營區"},{"i":53,"l":"博愛營區"},{"i":54,"l":"中科院"},{"i":55,"l":"空軍航校"},{"i":56,"l":"運輸兵群北大營區"},{"i":57,"l":"137旅"},{"i":58,"l":"陸軍專科學校"},{"i":59,"l":"空軍官校"},{"i":60,"l":"通校"},{"i":61,"l":"砲校 湯山營區"},{"i":62,"l":"三軍聯訓基地"},{"i":63,"l":"龍泉營區 陸訓中心"},{"i":64,"l":"歸仁營區"},{"i":65,"l":"復興崗營區"},{"i":66,"l":"左營20"},{"i":67,"l":"601旅"},{"i":68,"l":"第五地區支援指揮部 東興彈藥庫"},{"i":69,"l":"步校"},{"i":70,"l":"龍翔營區"},{"i":71,"l":"北測中心"},{"i":72,"l":"257旅"},{"i":73,"l":"加祿堂營區"},{"i":74,"l":"空軍松山指揮部 松南營區"},{"i":75,"l":"岳崙營區"},{"i":76,"l":"空軍防砲順練中心"},{"i":77,"l":"步校"},{"i":78,"l":"CCK營區"},{"i":79,"l":"左營17"},{"i":80,"l":"官田營區"},{"i":81,"l":"二重溪營區"},{"i":82,"l":"南測中心"},{"i":83,"l":"銀河營區"},{"i":84,"l":"忠勤營區"},{"i":85,"l":"航技學院"},{"i":86,"l":"步訓部"},{"i":87,"l":"陸軍通基廠營區"},{"i":88,"l":"陸軍步兵訓練指揮部"},{"i":89,"l":"砲測中心"},{"i":90,"l":"光隆52群"},{"i":91,"l":"後訓中心 漢陽 光育"},{"i":92,"l":"七星崗 后里營區 油池營區"},{"i":93,"l":"砲測中心"},{"i":94,"l":"虎峰"},{"i":95,"l":"圳堵營區"},{"i":96,"l":"後備斗煥坪 後備斗煥坪新訓中心"},{"i":97,"l":"慧敏營區 憲兵205指揮部 安卓"},{"i":98,"l":"慧敏營區 憲兵205指揮部 iOS"},{"i":99,"l":"忠愛營區 國防部後備指揮部"},{"i":100,"l":"康寧營區"},{"i":101,"l":"成功營區 東引指揮部"},{"i":102,"l":"台北廠"},{"i":103,"l":"國防大學校本部 率真校區"},{"i":104,"l":"564旅 天山營區 小岡山營區 嘉興營區"},{"i":105,"l":"四支部04 衛生營 支援隊"},{"i":106,"l":"四支部04 衛生營 支援隊"},{"i":107,"l":"台南基地 空軍第一聯隊"},{"i":108,"l":"長安營區 空軍防空砲兵指揮部"},{"i":109,"l":"中正嶺 國防大學理工學院"},{"i":110,"l":"知義營區 54工兵群 137旅"},{"i":111,"l":"田沃南營區 馬防部莒光守備大隊"},{"i":112,"l":"101旅 崎頂營區 精忠營區 成功嶺"},{"i":113,"l":"步兵109旅 太平里營區 龍華營區"},{"i":114,"l":"網寮南營區 39化學群"},{"i":115,"l":"空軍第七聯隊 台東基地"},{"i":116,"l":"航勤廠"},{"i":117,"l":"前山營區 關指部"},{"i":118,"l":"屏東基地 空軍第六聯隊 空訓中心 空軍第一後勤指揮部"},{"i":119,"l":"584旅 湖南營區 犁頭山營區 凌雲崗營區"},{"i":120,"l":"584旅 湖南營區 犁頭山營區 凌雲崗營區"},{"i":121,"l":"空軍第二聯隊 新竹基地 新竹油庫"},{"i":122,"l":"空軍馬基隊 馬公基地"},{"i":123,"l":"南埔營區 空軍第三後勤指揮部"},{"i":124,"l":"蘭指部 紅柴林營區"},{"i":125,"l":"關指部 后山營區"},{"i":126,"l":"坑子口營區 裝訓部 iOS"},{"i":127,"l":"坑子口營區 裝訓部 安卓"},{"i":128,"l":"武漢營區 特指部"},{"i":129,"l":"空軍官校 岡山基地"},{"i":130,"l":"新店東營區 關指部"},{"i":131,"l":"岡山基地 國軍空勤人員求生訓練中心 空軍官校"},{"i":132,"l":"台北福西營區 憲239營"},{"i":133,"l":"53工兵群 龍蟠營區 龍華營區"},{"i":134,"l":"空軍航空技術學校 航技學院"},{"i":135,"l":"台北廠 新店西營區"},{"i":136,"l":"馬防部南竿守備大隊 雲台山營區"},{"i":137,"l":"空軍松山指揮部 空軍氣象聯隊 松南營區"},{"i":138,"l":"湖口營區 542旅 584一營 天準 湖口廠"},{"i":139,"l":"竹坑營區 36化學兵群 234旅"},{"i":140,"l":"空軍司令部 忠勇營區"},{"i":141,"l":"二四九旅 斗煥坪營區 龍門營區"},{"i":142,"l":"嘉義基地 空軍第四聯隊"},{"i":143,"l":"602旅 龍翔營區"},{"i":144,"l":"馬防部北竿守備大隊 壁山營區"},{"i":145,"l":"馬防部北竿守備大隊 壁山營區"},{"i":146,"l":"工訓中心 金陵營區"},{"i":147,"l":"四支部03 台南廠"},{"i":148,"l":"淡海營區 海軍海洋監偵指揮部"},{"i":149,"l":"空軍教準部 空軍基地訓練指揮部 佳山基地"},{"i":150,"l":"中興嶺"},{"i":151,"l":"左營17"},{"i":152,"l":"153旅 金六結營區"},{"i":153,"l":"大直營區"},{"i":154,"l":"左營20 海軍陸戰隊學校"},{"i":155,"l":"兵整中心 岳崗營區"},{"i":156,"l":"五支部"},{"i":157,"l":"東海營區 蘇支部"},{"i":158,"l":"五支部東興彈藥庫"},{"i":159,"l":"左營02"},{"i":160,"l":"333旅 萬金營區"},{"i":161,"l":"203旅 官田營區"},{"i":162,"l":"新田營區 台中廠"},{"i":163,"l":"北大營區 5支部運輸群"},{"i":164,"l":"北測中心 通測中心 584旅2營"},{"i":165,"l":"北測中心 通測中心 584旅2營"},{"i":166,"l":"北測中心 通測中心 584旅2營"},{"i":167,"l":"二重溪 三軍聯訓基地所有營區 海口 茄湖 仁壽 保力 北門"},{"i":168,"l":"步訓部"},{"i":169,"l":"四支部01 高保廠 四支部運輸群 嶺口營區"},{"i":170,"l":"海軍陸戰隊66旅"},{"i":171,"l":"海軍陸戰隊99旅"},{"i":172,"l":"銀河營區 飛彈光電基地勤務廠"},{"i":173,"l":"清泉崗營區 234旅"},{"i":174,"l":"後訓中心技勤分部 光育營區"},{"i":175,"l":"陸訓中心 龍泉新訓中心"},{"i":176,"l":"歸仁營區 特指部飛訓部 航勤廠"},{"i":177,"l":"52工兵群 光隆營區"},{"i":178,"l":"空軍所有營區"},{"i":179,"l":"空軍所有營區"},{"i":180,"l":"137旅大內營區"},{"i":181,"l":"特訓中心 麗陽營區"},{"i":182,"l":"269旅 高山頂營區 金龍營區"},{"i":183,"l":"269旅 高山頂營區 金龍營區"},{"i":184,"l":"269旅 高山頂營區 金龍營區"},{"i":185,"l":"中科院 所有院區都通用"},{"i":186,"l":"中科院 所有院區都通用"},{"i":187,"l":"中科院 所有院區都通用"},{"i":188,"l":"花防部 南美崙營區"},{"i":189,"l":"博愛營區 國防部"},{"i":190,"l":"通訓中心 虎嶺營區"},{"i":191,"l":"砲訓部 湯山營區"},{"i":192,"l":"黃埔營區 北-陸軍官校 南-117旅"},{"i":193,"l":"育勤營區 後訓中心補給 運輸 中壢分庫 桃園油庫"},{"i":194,"l":"後訓中心 漢陽營區"},{"i":195,"l":"大漢營區 陸軍司令部 教準部"},{"i":196,"l":"龍陵營區 21砲 駕訓連 雙連坡"},{"i":197,"l":"十軍團 興中營區"},{"i":198,"l":"岳崙營區 陸軍汽機廠"},{"i":199,"l":"東指部 東保廠"},{"i":200,"l":"東指部 東保廠"},{"i":201,"l":"CCK營區 空軍第三聯隊"},{"i":202,"l":"CCK營區 空軍第三聯隊"},{"i":203,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":204,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":205,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":206,"l":"成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役"},{"i":207,"l":"陸軍專科學校 建國營區"},{"i":208,"l":"空軍防空砲兵訓練中心 加祿堂"},{"i":209,"l":"空軍防空砲兵訓練中心 加祿堂"},{"i":210,"l":"南測中心 無人機訓練中心 內角營區"},{"i":211,"l":"八軍團 泰山營區"},{"i":212,"l":"二支部"},{"i":213,"l":"澎防部 一支部"},{"i":214,"l":"58砲指部 圳堵營區"},{"i":215,"l":"58砲指部 圳堵營區"},{"i":216,"l":"龍城營區 601旅"},{"i":217,"l":"關西營區 犁頭山營區 206旅"},{"i":218,"l":"關西營區 犁頭山營區 206旅"},{"i":219,"l":"復興崗 國防大學 政戰 管理 心戰大隊 政訓中心"},{"i":220,"l":"內壢營區 陸軍通基廠"},{"i":221,"l":"砲測中心 大埔營區 梅林 埔尾 內灣 大埔"},{"i":222,"l":"忠勤營區 陸軍後勤指揮部"},{"i":223,"l":"中坑營區 257旅"},{"i":224,"l":"586旅 七星崗營區 厚里南營區 西屯平營區"},{"i":225,"l":"586旅 七星崗營區 厚里南營區 西屯平營區"},{"i":226,"l":"金六結營區"},{"i":227,"l":"岳崗營區"},{"i":228,"l":"43砲指部 仁美營區 考潭營區"},{"i":229,"l":"43砲指部 仁美營區 考潭營區"},{"i":230,"l":"龍翔營區 602旅"},{"i":231,"l":"太武營區 金防部 海龍儲訓隊"},{"i":232,"l":"後備 光隆 台中旅"},{"i":233,"l":"後備 光隆 台中旅"},{"i":234,"l":"後備 光隆 台中旅"},{"i":235,"l":"高雄旅 後備旅 鳳雄營區"},{"i":236,"l":"高雄旅 後備旅 鳳雄營區"},{"i":237,"l":"花崗營區 化訓中心"},{"i":238,"l":"忠勇營區 松南營區 空軍官校 空軍航空技術學校 空軍第一聯隊 馬基隊 空軍第二聯隊 空軍第三聯隊 空軍第四聯隊 空軍第五聯隊 空軍第六混合聯隊 空軍第七聯隊"},{"i":239,"l":"第四聯隊"},{"i":240,"l":"岡山基地"},{"i":241,"l":"金湯營區 陸軍步兵學校金湯營區"},{"i":242,"l":"四支部02 運輸群"},{"i":243,"l":"四支部02 運輸群"},{"i":244,"l":"堅貞營區 憲兵訓練中心"},{"i":245,"l":"柴山要塞 海軍陸戰隊防空警衛群 海洋監偵部第二中隊壽山雷達站"},{"i":246,"l":"龍游營區 陸軍73通資群 龍崗副工站"}];
 
-function generate(hint, site, kind) {
-  let r = 0;
-  for (let i = hint.length - 1; i >= 0; i--) {
-    const idx = ALPHABET.indexOf(hint[i]);
-    if (idx < 0) throw new Error("提示碼含有無效字元：" + hint[i]);
-    r = (Math.imul(r, 62) + idx) | 0;
-  }
-  let p = 1;
-  const s = site + SUFFIX[kind];
-  for (let i = 0; i < s.length; i++) p = Math.imul(p, s.charCodeAt(i)) | 0;
-  const ru = r >>> 0, pu = p >>> 0;
-  const key = [0x46, 0x8b, 0x46, 0x8b];
-  let v = 0;
-  for (let i = 0; i < 4; i++) {
-    const ab = (ru >>> ((3 - i) * 8)) & 0xff;
-    const bb = (pu >>> ((3 - i) * 8)) & 0xff;
-    v = (v << 8) | (ab ^ bb ^ key[i]);
-  }
-  v = v | 0;
-  return String(Math.abs(v) % 1000000).padStart(4, "0");
+// ---- device identity + binding ----
+function deviceId() {
+  let id = localStorage.getItem("mdm_dev");
+  if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()); localStorage.setItem("mdm_dev", id); }
+  return id;
+}
+function getToken() { return localStorage.getItem("mdm_tok") || ""; }
+function setToken(t) { localStorage.setItem("mdm_tok", t); }
+function getWho() { return localStorage.getItem("mdm_who") || ""; }
+
+async function api(action, extra) {
+  const res = await fetch(API, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(Object.assign({ action, deviceId: deviceId() }, extra || {})),
+  });
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
 }
 
-// ---- tabs ----
-const tabsEl = document.querySelector(".tabs");
-tabsEl.addEventListener("click", (e) => {
-  const t = e.target.closest(".tab");
-  if (!t) return;
-  const name = t.dataset.tab;
-  [...tabsEl.children].forEach((c) => c.classList.toggle("active", c === t));
-  document.getElementById("page-gen").classList.toggle("active", name === "gen");
-  document.getElementById("page-qr").classList.toggle("active", name === "qr");
+// ---- gate ----
+const gate = document.getElementById("gate");
+const appEl = document.getElementById("app");
+const step1 = document.getElementById("step1");
+const step2 = document.getElementById("step2");
+
+function showApp() {
+  gate.style.display = "none";
+  appEl.classList.add("ready");
+  document.getElementById("whoLine").textContent = getWho() ? ("使用者：" + getWho()) : "";
+}
+function showStep(n) {
+  step1.classList.toggle("active", n === 1);
+  step2.classList.toggle("active", n === 2);
+}
+
+let pollTimer = null;
+function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+async function pollOnce() {
+  try {
+    const r = await api("status", {});
+    if (r.status === "approved" && r.token) {
+      stopPoll();
+      setToken(r.token);
+      showApp();
+    } else if (r.status === "blocked") {
+      stopPoll();
+      document.getElementById("waitState").textContent = "此裝置已被封鎖";
+    }
+  } catch { /* keep polling */ }
+}
+function startPoll() {
+  stopPoll();
+  document.getElementById("waitState").textContent = "等待授權中…";
+  pollTimer = setInterval(pollOnce, 3000);
+}
+
+document.getElementById("sendCode").addEventListener("click", async () => {
+  const e = document.getElementById("gateErr1"); e.textContent = "";
+  const name = document.getElementById("who").value.trim();
+  if (!name) { e.textContent = "請輸入你是誰"; return; }
+  const btn = document.getElementById("sendCode"); btn.disabled = true; btn.textContent = "送出中…";
+  try {
+    localStorage.setItem("mdm_who", name);
+    const r = await api("start", { name });
+    if (r.approved) {
+      const s = await api("status", {});
+      if (s.token) { setToken(s.token); showApp(); return; }
+    }
+    showStep(2);
+    startPoll();
+  } catch (ex) { e.textContent = ex.message; }
+  finally { btn.disabled = false; btn.textContent = "送出授權申請"; }
 });
 
-// ---- generator ----
+document.getElementById("backStep1").addEventListener("click", () => { stopPoll(); showStep(1); });
+
+document.getElementById("unbind").addEventListener("click", () => {
+  localStorage.removeItem("mdm_tok");
+  location.reload();
+});
+
+// ---- generator (server-side) ----
 let mode = "unlock";
 const modesEl = document.getElementById("modes");
-modesEl.addEventListener("click", (e) => {
-  const t = e.target.closest(".mode");
-  if (!t) return;
+modesEl.addEventListener("click", (ev) => {
+  const t = ev.target.closest(".mode"); if (!t) return;
   mode = t.dataset.mode;
   [...modesEl.children].forEach((c) => c.classList.toggle("active", c === t));
 });
@@ -274,19 +271,25 @@ const errEl = document.getElementById("err");
 const resCard = document.getElementById("resultCard");
 const copiedEl = document.getElementById("copied");
 const siteInput = document.getElementById("site");
+const genBtn = document.getElementById("gen");
 
-function run() {
+async function run() {
   errEl.textContent = ""; copiedEl.textContent = "";
   const hint = document.getElementById("hint").value.trim();
   const site = siteInput.value.trim();
   if (!hint) { errEl.textContent = "請輸入提示碼"; return; }
   if (!site) { errEl.textContent = "請輸入營區名稱"; return; }
+  genBtn.disabled = true; genBtn.textContent = "計算中…";
   try {
-    pwEl.textContent = generate(hint, site, mode);
+    const r = await api("generate", { token: getToken(), hint, site, mode });
+    pwEl.textContent = r.pw;
     resCard.classList.remove("empty");
-  } catch (ex) { errEl.textContent = ex.message; }
+  } catch (ex) {
+    errEl.textContent = ex.message;
+    if (/未授權|未授權|403|401/.test(ex.message)) { /* token invalid */ }
+  } finally { genBtn.disabled = false; genBtn.textContent = "產生密碼"; }
 }
-document.getElementById("gen").addEventListener("click", run);
+genBtn.addEventListener("click", run);
 document.getElementById("hint").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
 siteInput.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
 
@@ -294,9 +297,18 @@ pwEl.addEventListener("click", () => {
   const txt = pwEl.textContent.trim();
   if (!/^\d+$/.test(txt)) return;
   navigator.clipboard?.writeText(txt).then(() => {
-    copiedEl.textContent = "已複製 " + txt;
-    setTimeout(() => (copiedEl.textContent = ""), 1500);
+    copiedEl.textContent = "已複製 " + txt; setTimeout(() => (copiedEl.textContent = ""), 1500);
   });
+});
+
+// ---- tabs ----
+const tabsEl = document.querySelector(".tabs");
+tabsEl.addEventListener("click", (e) => {
+  const t = e.target.closest(".tab"); if (!t) return;
+  const name = t.dataset.tab;
+  [...tabsEl.children].forEach((c) => c.classList.toggle("active", c === t));
+  document.getElementById("page-gen").classList.toggle("active", name === "gen");
+  document.getElementById("page-qr").classList.toggle("active", name === "qr");
 });
 
 // ---- QR search ----
@@ -304,28 +316,19 @@ const norm = (s) => s.toLowerCase().replace(/[\s_\-－—/]+/g, "");
 const qrSearch = document.getElementById("qrSearch");
 const qrList = document.getElementById("qrList");
 const qrCount = document.getElementById("qrCount");
-
 function renderQr(q) {
   const terms = q.trim().split(/\s+/).map(norm).filter(Boolean);
   let items;
-  if (!terms.length) {
-    items = QR.slice();
-  } else {
+  if (!terms.length) items = QR.slice();
+  else {
     items = QR.filter((x) => { const l = norm(x.l); return terms.every((t) => l.includes(t)); });
-    const wq = norm(q);
-    const score = (l) => (l === wq ? 0 : l.startsWith(wq) ? 1 : l.includes(wq) ? 2 : 3);
+    const wq = norm(q); const score = (l) => (l === wq ? 0 : l.startsWith(wq) ? 1 : l.includes(wq) ? 2 : 3);
     items.sort((a, b) => score(norm(a.l)) - score(norm(b.l)) || a.l.length - b.l.length || a.i - b.i);
   }
   qrCount.textContent = terms.length ? `找到 ${items.length} 筆` : `共 ${items.length} 筆`;
-  if (!items.length) {
-    qrList.innerHTML = '<div class="qrEmpty">找不到符合的營區</div>';
-    return;
-  }
-  qrList.innerHTML = items.map((x) =>
-    `<div class="qrItem" data-id="${x.i}" data-label="${x.l.replace(/"/g, "&quot;")}">
-       <img loading="lazy" src="qr/${x.i}.jpg" alt="" />
-       <div class="lbl">${x.l}</div>
-     </div>`).join("");
+  qrList.innerHTML = items.length
+    ? items.map((x) => `<div class="qrItem" data-id="${x.i}" data-label="${x.l.replace(/"/g,"&quot;")}"><img loading="lazy" src="qr/${x.i}.jpg" alt=""/><div class="lbl">${x.l}</div></div>`).join("")
+    : '<div class="qrEmpty">找不到符合的營區</div>';
 }
 qrSearch.addEventListener("input", () => renderQr(qrSearch.value));
 renderQr("");
@@ -335,22 +338,19 @@ const lb = document.getElementById("lb");
 const lbImg = document.getElementById("lbImg");
 const lbTitle = document.getElementById("lbTitle");
 let lbLabel = "";
-
 qrList.addEventListener("click", (e) => {
-  const it = e.target.closest(".qrItem");
-  if (!it) return;
-  lbLabel = it.dataset.label;
-  lbTitle.textContent = lbLabel;
-  lbImg.src = "qr/" + it.dataset.id + ".jpg";
-  lb.classList.add("open");
+  const it = e.target.closest(".qrItem"); if (!it) return;
+  lbLabel = it.dataset.label; lbTitle.textContent = lbLabel;
+  lbImg.src = "qr/" + it.dataset.id + ".jpg"; lb.classList.add("open");
 });
 document.getElementById("lbClose").addEventListener("click", () => lb.classList.remove("open"));
 document.getElementById("lbUse").addEventListener("click", () => {
-  lb.classList.remove("open");
-  siteInput.value = lbLabel;
-  tabsEl.children[0].click();
-  siteInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  lb.classList.remove("open"); siteInput.value = lbLabel;
+  tabsEl.children[0].click(); siteInput.scrollIntoView({ behavior: "smooth", block: "center" });
 });
+
+// ---- boot ----
+if (getToken()) showApp(); else { gate.style.display = "flex"; showStep(1); }
 </script>
 </body>
 </html>
