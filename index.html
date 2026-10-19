@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark light" />
+<title>MDM 密碼產生器</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --card: #1a2032;
+    --card2: #222a40;
+    --line: #2d3550;
+    --text: #e8ecf6;
+    --muted: #8b93a9;
+    --accent: #5b8cff;
+    --accent2: #3fd0a0;
+    --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 4px 0 2px; letter-spacing: .5px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 16px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px 2px; }
+  input[type=text], select {
+    width: 100%;
+    background: var(--card2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 12px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type=text]:focus, select:focus { border-color: var(--accent); }
+  .field { margin-bottom: 14px; }
+  .modes { display: flex; gap: 8px; }
+  .mode {
+    flex: 1; text-align: center;
+    background: var(--card2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 4px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: all .15s;
+  }
+  .mode.active { border-color: var(--accent); background: rgba(91,140,255,.14); color: var(--accent); }
+  button.gen {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #7aa0ff);
+    color: #fff; border: 0;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  button.gen:active { transform: scale(.99); }
+  .result {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 16px;
+  }
+  .result .pw {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    color: var(--accent2);
+    font-variant-numeric: tabular-nums;
+    margin: 4px 0;
+    cursor: pointer;
+  }
+  .result .hint { color: var(--muted); font-size: 12px; }
+  .result.empty .pw { color: var(--muted); letter-spacing: 4px; font-size: 28px; }
+  .copied { color: var(--accent2); font-size: 12px; height: 16px; }
+  .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 8px; }
+  .foot { text-align: center; color: var(--muted); font-size: 11px; margin-top: 24px; line-height: 1.6; }
+  datalist { color: #000; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MDM 密碼產生器</h1>
+  <div class="sub">輸入提示碼與營區名稱即可離線計算，不連線、不上傳。</div>
+
+  <div class="card">
+    <div class="field">
+      <label for="hint">提示碼（螢幕上顯示的英數字串）</label>
+      <input type="text" id="hint" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="例如 Zivvrt" />
+    </div>
+    <div class="field">
+      <label for="site">營區名稱</label>
+      <input type="text" id="site" list="camps" autocomplete="off" placeholder="輸入或選擇營區，例如 中科院" />
+      <datalist id="camps"></datalist>
+    </div>
+    <div class="field">
+      <label>模式</label>
+      <div class="modes" id="modes">
+        <div class="mode active" data-mode="unlock">解鎖</div>
+        <div class="mode" data-mode="uninstall">解除安裝</div>
+        <div class="mode" data-mode="location">定位</div>
+      </div>
+    </div>
+    <button class="gen" id="gen">產生密碼</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="result empty" id="resultCard">
+    <div class="hint">點擊密碼可複製</div>
+    <div class="pw" id="pw">— — — —</div>
+    <div class="copied" id="copied"></div>
+  </div>
+
+  <div class="foot">
+    純前端運算 · 資料不離開裝置<br />
+    營區清單共 <span id="cnt">0</span> 筆，支援模糊輸入
+  </div>
+</div>
+
+<script>
+const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const SUFFIX = { unlock: "wdQ31H", uninstall: "Un5fp7", location: "showMapwdQ31H" };
+const CAMPS = ["101旅 崎頂營區 精忠營區 成功嶺", "137旅", "137旅大內營區", "153旅 金六結營區", "203旅 官田營區", "206旅", "249旅 斗煥坪營區 龍門營區", "257旅", "269旅", "269旅 高山頂營區 金龍營區", "333旅", "333旅 萬金營區", "43砲指部 仁美營區 考潭營區", "52工兵群 光隆營區", "53工兵群 龍蟠營區 龍華營區", "564旅 天山營區 小岡山營區 嘉興營區", "584旅 湖南營區 犁頭山營區 凌雲崗營區", "586旅 七星崗營區 厚里南營區 西屯平營區", "58砲指部 圳堵營區", "601旅", "602旅 龍翔營區", "CCK營區", "CCK營區 空軍第三聯隊", "七星崗 后里營區 油池營區", "三軍聯訓基地", "中坑營區", "中坑營區 257旅", "中正嶺 國防大學理工學院", "中科院", "中科院 所有院區都通用", "中興嶺", "二四九旅 斗煥坪營區 龍門營區", "二支部", "二重溪 三軍聯訓基地所有營區 海口 茄湖 仁壽 保力 北門", "二重溪營區", "五支部", "五支部東興彈藥庫", "光育營區", "光隆52群", "內壢營區 陸軍通基廠", "內角營區", "八軍團", "八軍團 泰山營區", "兵整中心 岳崗營區", "前山營區 關指部", "加祿堂營區", "北大營區 5支部運輸群", "北測中心", "北測中心 通測中心 584旅2營", "十軍團", "十軍團 興中營區", "南埔營區 空軍第三後勤指揮部", "南測中心", "南測中心 無人機訓練中心 內角營區", "博愛營區", "博愛營區 國防部", "台中廠", "台北廠", "台北廠 新店西營區", "台北福西營區 憲239營", "台南基地 空軍第一聯隊", "台東鑑測站", "嘉義基地 空軍第四聯隊", "四支部01 高保廠 四支部運輸群 嶺口營區", "四支部02 運輸群", "四支部03 台南廠", "四支部04 衛生營 支援隊", "四聯隊", "國防大學校本部 率真校區", "圳堵營區", "坑子口營區 裝訓部 iOS", "坑子口營區 裝訓部 安卓", "堅貞營區 憲兵訓練中心", "大漢營區 陸軍司令部 教準部", "大直營區", "太平營區", "太武營區 金防部 海龍儲訓隊", "官田營區", "屏東基地", "屏東基地 空軍第六聯隊 空訓中心 空軍第一後勤指揮部", "岡山基地", "岡山基地 國軍空勤人員求生訓練中心 空軍官校", "岳崗營區", "岳崙營區", "岳崙營區 陸軍汽機廠", "崎頂營區 步兵101旅", "工訓中心 燕巢", "工訓中心 金陵營區", "左營02", "左營17", "左營20", "左營20 海軍陸戰隊學校", "康寧營區", "建國營區 陸軍專科學校 陸專 專校", "後備 光隆 台中旅", "後備斗煥坪 後備斗煥坪新訓中心", "後訓 漢陽營區", "後訓 育勤營區", "後訓中心 漢陽 光育", "後訓中心 漢陽營區", "後訓中心技勤分部 光育營區", "復興崗 國防大學 政戰 管理 心戰大隊 政訓中心", "復興崗營區", "忠勇營區 松南營區 空軍官校 空軍航空技術學校 空軍第一聯隊 馬基隊 空軍第二聯隊 空軍第三聯隊 空軍第四聯隊 空軍第五聯隊 空軍第六混合聯隊 空軍第七聯隊", "忠勤營區", "忠勤營區 陸軍後勤指揮部", "忠愛營區 國防部後備指揮部", "慧敏營區 憲兵205指揮部 iOS", "慧敏營區 憲兵205指揮部 安卓", "成功嶺", "成功嶺 104 302 101 五支部衛生營 彈藥分庫 役政署替代役", "成功營區 東引", "成功營區 東引指揮部", "新店東營區 關指部", "新田營區 台中廠", "東指部 東保廠", "東海營區 蘇支部", "柴山要塞 海軍陸戰隊防空警衛群 海洋監偵部第二中隊壽山雷達站", "步兵109旅 太平里營區", "步兵109旅 太平里營區 龍華營區", "步校", "步訓部", "武漢營區 特指部", "歸仁營區", "歸仁營區 特指部飛訓部 航勤廠", "海軍陸戰隊66旅", "海軍陸戰隊99旅", "淡海營區", "淡海營區 海軍海洋監偵指揮部", "清泉崗營區 234旅", "湖口營區", "湖口營區 542旅 584一營 天準 湖口廠", "澎防部 一支部", "特訓中心 麗陽營區", "田沃南營區 馬防部莒光守備大隊", "知義營區 54工兵群", "知義營區 54工兵群 137旅", "砲校 湯山營區", "砲測中心", "砲測中心 大埔營區 梅林 埔尾 內灣 大埔", "砲訓部 湯山營區", "福西營區 憲239", "空軍司令部 忠勇營區", "空軍單位MDM", "空軍官校", "空軍官校 岡山基地", "空軍忠勇營區", "空軍所有營區", "空軍教準部 空軍基地訓練指揮部 佳山基地", "空軍松山指揮部 松南營區", "空軍松山指揮部 空軍氣象聯隊 松南營區", "空軍第七聯隊 台東基地", "空軍第二聯隊 新竹基地 新竹油庫", "空軍航校", "空軍航空技術學校 航技學院", "空軍防砲順練中心", "空軍防空砲兵訓練中心 加祿堂", "空軍馬基隊 馬公基地", "竹坑營區", "竹坑營區 36化學兵群 234旅", "第五地區支援指揮部 東興彈藥庫", "第四聯隊", "紅柴林營區", "網寮南營區 39化", "網寮南營區 39化學群", "聯訓基地所有營區通用", "育勤營區 後訓中心補給 運輸 中壢分庫 桃園油庫", "航勤廠", "航技學院", "花崗營區 化訓中心", "花防部 南美崙營區", "蘭指部 紅柴林營區", "虎峰", "通基廠", "通校", "通訓中心 虎嶺營區", "運輸兵群北大營區", "金六結", "金六結營區", "金湯營區 陸軍步兵學校金湯營區", "銀河營區", "銀河營區 飛彈光電基地勤務廠", "長安營區 空軍防空砲兵指揮部", "關指部 后山營區", "關西營區 犁頭山營區 206旅", "陸戰66旅", "陸戰99旅", "陸訓中心 龍泉新訓中心", "陸軍專科學校", "陸軍專科學校 建國營區", "陸軍步兵訓練指揮部", "陸軍裝甲586旅", "陸軍通基廠營區", "雙連坡", "馬防部北竿守備大隊 壁山營區", "馬防部南竿守備大隊 雲台山營區", "高保廠", "高雄旅 後備旅 鳳雄營區", "麗陽營區", "黃埔營區", "黃埔營區 北-陸軍官校 南-117旅", "龍城營區 601旅", "龍泉營區 陸訓中心", "龍游營區 陸軍73通資群 龍崗副工站", "龍翔營區", "龍翔營區 602旅", "龍陵營區 21砲 駕訓連 雙連坡"];
+
+function generate(hint, site, kind) {
+  let r = 0;
+  for (let i = hint.length - 1; i >= 0; i--) {
+    const idx = ALPHABET.indexOf(hint[i]);
+    if (idx < 0) throw new Error("提示碼含有無效字元：" + hint[i]);
+    r = (Math.imul(r, 62) + idx) | 0;
+  }
+  let p = 1;
+  const s = site + SUFFIX[kind];
+  for (let i = 0; i < s.length; i++) {
+    p = Math.imul(p, s.charCodeAt(i)) | 0;
+  }
+  const ru = r >>> 0, pu = p >>> 0;
+  const key = [0x46, 0x8b, 0x46, 0x8b];
+  let v = 0;
+  for (let i = 0; i < 4; i++) {
+    const ab = (ru >>> ((3 - i) * 8)) & 0xff;
+    const bb = (pu >>> ((3 - i) * 8)) & 0xff;
+    v = (v << 8) | (ab ^ bb ^ key[i]);
+  }
+  v = v | 0;
+  return String(Math.abs(v) % 1000000).padStart(4, "0");
+}
+
+// UI wiring
+let mode = "unlock";
+const modesEl = document.getElementById("modes");
+modesEl.addEventListener("click", (e) => {
+  const t = e.target.closest(".mode");
+  if (!t) return;
+  mode = t.dataset.mode;
+  [...modesEl.children].forEach((c) => c.classList.toggle("active", c === t));
+});
+
+const dl = document.getElementById("camps");
+dl.innerHTML = CAMPS.map((c) => `<option value="${c.replace(/"/g, "&quot;")}"></option>`).join("");
+document.getElementById("cnt").textContent = CAMPS.length;
+
+const pwEl = document.getElementById("pw");
+const errEl = document.getElementById("err");
+const resCard = document.getElementById("resultCard");
+const copiedEl = document.getElementById("copied");
+
+function run() {
+  errEl.textContent = "";
+  copiedEl.textContent = "";
+  const hint = document.getElementById("hint").value.trim();
+  const site = document.getElementById("site").value.trim();
+  if (!hint) { errEl.textContent = "請輸入提示碼"; return; }
+  if (!site) { errEl.textContent = "請輸入營區名稱"; return; }
+  try {
+    const pw = generate(hint, site, mode);
+    pwEl.textContent = pw;
+    resCard.classList.remove("empty");
+  } catch (ex) {
+    errEl.textContent = ex.message;
+  }
+}
+
+document.getElementById("gen").addEventListener("click", run);
+document.getElementById("hint").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+document.getElementById("site").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+
+pwEl.addEventListener("click", () => {
+  const txt = pwEl.textContent.trim();
+  if (!/^\d+$/.test(txt)) return;
+  navigator.clipboard?.writeText(txt).then(() => {
+    copiedEl.textContent = "已複製 " + txt;
+    setTimeout(() => (copiedEl.textContent = ""), 1500);
+  });
+});
+</script>
+</body>
+</html>
