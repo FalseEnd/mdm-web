@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="google" content="notranslate" />
+<title>確認授權</title>
+<style>
+  body { margin:0; background:#0f1420; color:#e8ecf6;
+    font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;
+    display:flex; min-height:100vh; align-items:center; justify-content:center; padding:20px; }
+  .c { max-width:380px; width:100%; background:#1a2032; border:1px solid #2d3550;
+    border-radius:16px; padding:24px; text-align:center; }
+  h2 { margin:0 0 10px; font-size:20px; }
+  p { color:#8b93a9; font-size:14px; line-height:1.7; margin:6px 0; }
+  b { color:#e8ecf6; }
+  button { margin-top:16px; width:100%; color:#fff; border:0; border-radius:12px;
+    padding:14px; font-size:16px; font-weight:600; cursor:pointer;
+    background:linear-gradient(135deg,#5b8cff,#7aa0ff); }
+  button:disabled { opacity:.5; }
+  .ok { color:#3fd0a0; }
+  .err { color:#ff6b6b; }
+</style>
+</head>
+<body>
+<div class="c" id="box">
+  <h2>確認授權</h2>
+  <p>按「確定授權」後，這台申請的裝置即可使用 MDM 密碼工具。</p>
+  <button id="go">確定授權</button>
+  <p id="msg"></p>
+</div>
+<script>
+const API = "https://mdlevoygfciwzlqtsids.supabase.co/functions/v1/api";
+const q = new URLSearchParams(location.search);
+const dev = q.get("dev") || "";
+const t = q.get("t") || "";
+const btn = document.getElementById("go");
+const msg = document.getElementById("msg");
+
+if (!dev || !t) {
+  btn.style.display = "none";
+  msg.className = "err";
+  msg.textContent = "連結無效（缺少參數）。";
+}
+
+btn.addEventListener("click", async () => {
+  btn.disabled = true; btn.textContent = "授權中…"; msg.textContent = ""; msg.className = "";
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "approve", deviceId: dev, t }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    msg.className = "ok";
+    msg.textContent = data.already ? "這台裝置先前已授權。" : "已授權成功！請回到該裝置，畫面會自動解鎖。";
+    btn.style.display = "none";
+  } catch (ex) {
+    msg.className = "err";
+    msg.textContent = "授權失敗：" + ex.message;
+    btn.disabled = false; btn.textContent = "確定授權";
+  }
+});
+</script>
+</body>
+</html>
