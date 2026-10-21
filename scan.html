@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>相機偵測解鎖畫面</title>
+<style>
+  :root { --bg:#0f1420; --card:#1a2032; --line:#2d3550; --text:#e8ecf6; --muted:#8b93a9; --accent:#5b8cff; --accent2:#3fd0a0; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:#000; color:var(--text);
+    font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif; -webkit-tap-highlight-color:transparent; }
+  .bar { position:fixed; top:0; left:0; right:0; z-index:5; background:rgba(0,0,0,.6); padding:10px 12px; }
+  .bar a { color:#fff; text-decoration:none; font-size:14px; }
+  .top { position:fixed; top:44px; left:0; right:0; z-index:5; background:rgba(0,0,0,.55); padding:10px 12px; }
+  input[type=text] { width:100%; background:#ffffff1f; border:0; color:#fff; border-radius:10px; padding:11px 12px; font-size:16px; outline:none; }
+  input::placeholder { color:#ffffff66; }
+  .modes { display:flex; gap:6px; margin-top:8px; }
+  .mode { flex:1; text-align:center; background:#ffffff1f; color:#ffffffbb; border-radius:8px; padding:9px 2px; font-size:13px; cursor:pointer; }
+  .mode.active { background:var(--accent); color:#fff; font-weight:700; }
+  #video { position:fixed; inset:0; width:100%; height:100%; object-fit:cover; background:#000; z-index:1; }
+  .frame { position:fixed; z-index:3; left:4%; right:4%; top:42%; height:16%;
+    border:2px solid #ffffffb0; border-radius:12px; pointer-events:none; }
+  .frame span { position:absolute; top:-26px; left:0; background:#0009; padding:2px 8px; border-radius:6px; font-size:12px; color:#fff; }
+  .bottom { position:fixed; bottom:0; left:0; right:0; z-index:5; background:rgba(0,0,0,.75); padding:14px 16px 26px; text-align:center; }
+  .hintline { color:#ffffffb0; font-size:14px; min-height:18px; }
+  .pw { color:var(--accent2); font-size:46px; font-weight:800; letter-spacing:6px; margin:6px 0 2px; cursor:pointer; }
+  .pw.empty { color:#ffffff44; font-size:30px; letter-spacing:4px; }
+  .note { font-size:12px; color:#ffffff66; }
+  .warn { color:#ffb86b; font-size:14px; }
+  #start { position:fixed; z-index:6; inset:0; display:flex; align-items:center; justify-content:center; background:#000; flex-direction:column; gap:14px; padding:24px; text-align:center; }
+  #start.hide { display:none; }
+  #start button { background:linear-gradient(135deg,var(--accent),#7aa0ff); color:#fff; border:0; border-radius:12px; padding:15px 26px; font-size:17px; font-weight:700; cursor:pointer; }
+  #start p { color:var(--muted); font-size:14px; max-width:340px; line-height:1.7; }
+  canvas { display:none; }
+</style>
+</head>
+<body>
+<video id="video" autoplay playsinline muted></video>
+<canvas id="work"></canvas>
+<canvas id="cell" width="48" height="48"></canvas>
+
+<div class="bar"><a href="index.html">‹ 返回</a>　<b style="font-size:14px">相機偵測解鎖畫面</b></div>
+<div class="top">
+  <input type="text" id="camp" placeholder="營區名稱（例如 中科院）" />
+  <div class="modes" id="modes">
+    <div class="mode active" data-mode="unlock">一般解鎖</div>
+    <div class="mode" data-mode="uninstall">解除安裝</div>
+    <div class="mode" data-mode="location">定位診斷</div>
+  </div>
+</div>
+
+<div class="frame"><span>將提示碼對準框內</span></div>
+
+<div class="bottom">
+  <div class="hintline" id="hintline">偵測中…請對準提示碼</div>
+  <div class="pw empty" id="pw">— — — —</div>
+  <div class="note" id="note">點密碼可複製</div>
+</div>
+
+<div id="start">
+  <div style="font-size:20px;font-weight:700">相機偵測解鎖畫面</div>
+  <p>對準另一台裝置的 MDM 解鎖畫面，自動辨識提示碼並即時算出密碼。密碼由伺服器計算，需已授權本裝置。</p>
+  <button id="startBtn">開啟相機</button>
+  <div class="warn" id="startErr"></div>
+</div>
+
+<script>
+const API = "https://mdlevoygfciwzlqtsids.supabase.co/functions/v1/api";
+const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+// 讀取主畫面帶來的營區/類型與裝置授權
+const params = new URLSearchParams(location.search);
+let mode = params.get("type") || "unlock";
+document.getElementById("camp").value = params.get("camp") || "";
+function deviceId() { return localStorage.getItem("mdm_dev") || ""; }
+function token() { return localStorage.getItem("mdm_tok") || ""; }
+
+const modesEl = document.getElementById("modes");
+[...modesEl.children].forEach(c => c.classList.toggle("active", c.dataset.mode === mode));
+modesEl.addEventListener("click", e => {
+  const t = e.target.closest(".mode"); if (!t) return;
+  mode = t.dataset.mode;
+  [...modesEl.children].forEach(c => c.classList.toggle("active", c === t));
+  lastHint = ""; recompute();
+});
+
+const video = document.getElementById("video");
+const work = document.getElementById("work");
+const wctx = work.getContext("2d", { willReadFrequently: true });
+const cell = document.getElementById("cell");
+const cctx = cell.getContext("2d", { willReadFrequently: true });
+const hintlineEl = document.getElementById("hintline");
+const pwEl = document.getElementById("pw");
+const noteEl = document.getElementById("note");
+const campEl = document.getElementById("camp");
+
+let TEMPLATES = null;           // 62 × 2304 字串
+let lastHint = "";
+let candidate = "", candCount = 0;
+let timer = null;
+
+// ───── 顏色分類（對應 App 的 _classifyColor） ─────
+function cls(r, g, b) {
+  if (r > 200 && g > 200 && b > 200) return 119;       // 'w'
+  if (r < 80 && g < 80 && b < 80) return 107;          // 'k'
+  if (r > 150 && r > g * 1.8 && r > b * 1.8) return 114;// 'r'
+  if (b > 150 && b > r * 1.8 && b > g * 1.8) return 98; // 'b'
+  return 111;                                           // 'o'
+}
+function isGlyphBg(code) { return code === 119 || code === 114 || code === 98; }
+
+// 在影像資料中找字元格子（對應 _findGlyphCells）
+function findCells(data, W, H) {
+  // 每列是否含字形背景
+  const rowHas = new Uint8Array(H);
+  for (let y = 0; y < H; y++) {
+    let has = 0;
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (isGlyphBg(cls(data[i], data[i + 1], data[i + 2]))) { has = 1; break; }
+    }
+    rowHas[y] = has;
+  }
+  // 取最高 band
+  let bands = [], top = -1;
+  for (let y = 0; y < H; y++) {
+    if (rowHas[y] && top < 0) top = y;
+    else if (!rowHas[y] && top >= 0) { bands.push([top, y - 1]); top = -1; }
+  }
+  if (top >= 0) bands.push([top, H - 1]);
+  if (!bands.length) return [];
+  let band = bands[0];
+  for (const b of bands) if (b[1] - b[0] > band[1] - band[0]) band = b;
+  const bt = band[0], bh = band[1] - band[0] + 1;
+
+  // band 內的直向 runs
+  let runs = [], left = -1;
+  for (let x = 0; x < W; x++) {
+    let has = 0;
+    for (let y = bt; y <= band[1]; y++) {
+      const i = (y * W + x) * 4;
+      if (isGlyphBg(cls(data[i], data[i + 1], data[i + 2]))) { has = 1; break; }
+    }
+    if (has && left < 0) left = x;
+    else if (!has && left >= 0) { runs.push([left, x - 1]); left = -1; }
+  }
+  if (left >= 0) runs.push([left, W - 1]);
+
+  const cells = [];
+  for (const run of runs) {
+    const rw = run[1] - run[0] + 1;
+    const count = Math.max(1, Math.floor((rw + (bh >> 1)) / bh));
+    const cw = Math.floor(rw / count);
+    for (let k = 0; k < count; k++) {
+      const x0 = run[0] + k * cw;
+      const w = (k === count - 1) ? (run[1] - x0 + 1) : cw;
+      if (w > 2) cells.push({ x: x0, y: bt, w, h: bh });
+    }
+  }
+  return cells;
+}
+
+function matchCell(src, sx, sy, sw, sh) {
+  cctx.clearRect(0, 0, 48, 48);
+  cctx.drawImage(src, sx, sy, sw, sh, 0, 0, 48, 48);
+  const d = cctx.getImageData(0, 0, 48, 48).data;
+  // 量化成字元碼字串比對
+  const buf = new Array(2304);
+  for (let p = 0, j = 0; p < d.length; p += 4, j++) {
+    buf[j] = cls(d[p], d[p + 1], d[p + 2]);
+  }
+  let best = -1, bestIdx = -1;
+  for (let t = 0; t < TEMPLATES.length; t++) {
+    const tpl = TEMPLATES[t];
+    let match = 0;
+    for (let j = 0; j < 2304; j++) if (tpl.charCodeAt(j) === buf[j]) match++;
+    const score = match / 2304;
+    if (score > best) { best = score; bestIdx = t; }
+  }
+  if (best < 0.55 || bestIdx < 0) return "";
+  return ALPHABET[bestIdx];
+}
+
+function recognize() {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return "";
+  // 下採樣到寬 480
+  const scale = 480 / vw;
+  const W = 480, H = Math.round(vh * scale);
+  work.width = W; work.height = H;
+  wctx.drawImage(video, 0, 0, W, H);
+  // 取中央 50% 高度（對應取景框）
+  const cropY = Math.round(H * 0.25), cropH = Math.round(H * 0.5);
+  const data = wctx.getImageData(0, cropY, W, cropH).data;
+  const cells = findCells(data, W, cropH);
+  let out = "";
+  for (const c of cells) out += matchCell(work, c.x, cropY + c.y, c.w, c.h);
+  return out;
+}
+
+async function genPassword(hint) {
+  const camp = campEl.value.trim();
+  if (!camp) return { err: "請先輸入營區名稱" };
+  const res = await fetch(API, {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action: "generate", deviceId: deviceId(), token: token(), hint, site: camp, mode }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return { err: data.error || ("HTTP " + res.status) };
+  return { pw: data.pw };
+}
+
+let computing = false;
+async function recompute() {
+  if (!lastHint) { pwEl.textContent = "— — — —"; pwEl.className = "pw empty"; return; }
+  if (computing) return;
+  computing = true;
+  try {
+    const r = await genPassword(lastHint);
+    if (r.err) { hintlineEl.innerHTML = `提示碼：${lastHint}`; pwEl.className = "pw empty"; pwEl.textContent = "— — — —"; noteEl.className = "warn"; noteEl.textContent = r.err; }
+    else { pwEl.textContent = r.pw; pwEl.className = "pw"; noteEl.className = "note"; noteEl.textContent = "點密碼可複製"; }
+  } finally { computing = false; }
+}
+
+async function tick() {
+  if (!TEMPLATES) return;
+  let hint;
+  try { hint = recognize(); } catch { return; }
+  if (hint.length < 4 || hint.length > 10) return;
+  // 連續兩幀一致才採用
+  if (hint === candidate) candCount++; else { candidate = hint; candCount = 1; }
+  if (candCount < 2) return;
+  if (hint === lastHint) return;
+  lastHint = hint;
+  hintlineEl.textContent = "提示碼：" + hint;
+  recompute();
+}
+
+pwEl.addEventListener("click", () => {
+  const t = pwEl.textContent.trim();
+  if (!/^\d+$/.test(t)) return;
+  navigator.clipboard?.writeText(t);
+  noteEl.textContent = "已複製 " + t;
+});
+campEl.addEventListener("input", () => { lastHint = ""; candidate = ""; candCount = 0; });
+
+async function start() {
+  const errEl = document.getElementById("startErr");
+  errEl.textContent = "";
+  if (!token()) { errEl.textContent = "本裝置尚未授權，請先回主畫面完成授權。"; return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } }, audio: false,
+    });
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById("start").classList.add("hide");
+    if (!TEMPLATES) {
+      TEMPLATES = await fetch("scan_templates.json").then(r => r.json());
+    }
+    timer = setInterval(tick, 650);
+  } catch (e) {
+    errEl.textContent = "無法開啟相機：" + (e.message || e);
+  }
+}
+document.getElementById("startBtn").addEventListener("click", start);
+window.addEventListener("pagehide", () => {
+  if (timer) clearInterval(timer);
+  const s = video.srcObject; if (s) s.getTracks().forEach(t => t.stop());
+});
+</script>
+</body>
+</html>

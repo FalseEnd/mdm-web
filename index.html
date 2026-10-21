@@ -134,6 +134,7 @@
         </div>
       </div>
       <button class="gen" id="gen">產生密碼</button>
+      <button class="linkbtn" id="camScan" style="margin-top:10px">📷 相機偵測解鎖畫面</button>
       <div class="err" id="err"></div>
     </div>
 
@@ -290,6 +291,9 @@ async function run() {
   } finally { genBtn.disabled = false; genBtn.textContent = "產生密碼"; }
 }
 genBtn.addEventListener("click", run);
+document.getElementById("camScan").addEventListener("click", () => {
+  location.href = "scan.html?camp=" + encodeURIComponent(siteInput.value.trim()) + "&type=" + mode;
+});
 document.getElementById("hint").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
 siteInput.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
 
