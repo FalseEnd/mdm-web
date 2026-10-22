@@ -97,44 +97,48 @@ const campEl = document.getElementById("camp");
 
 let TEMPLATES = null;           // 62 × 2304 字串
 let lastHint = "";
-let candidate = "", candCount = 0;
+let recent = [];                // 最近數幀辨識結果（投票用）
+const WINDOW = 5, NEED = 2;
 let timer = null;
 
-// ───── 顏色分類（對應 App 的 _classifyColor） ─────
+// ───── 自適應顏色分類（對應 App 的 _classifyRgb，相機下更穩） ─────
 function cls(r, g, b) {
-  if (r > 200 && g > 200 && b > 200) return 119;       // 'w'
-  if (r < 80 && g < 80 && b < 80) return 107;          // 'k'
-  if (r > 150 && r > g * 1.8 && r > b * 1.8) return 114;// 'r'
-  if (b > 150 && b > r * 1.8 && b > g * 1.8) return 98; // 'b'
-  return 111;                                           // 'o'
+  const maxc = r > g ? (r > b ? r : b) : (g > b ? g : b);
+  const minc = r < g ? (r < b ? r : b) : (g < b ? g : b);
+  const sat = maxc - minc;
+  if (maxc < 80) return 107;                             // 'k' 背景
+  if (sat < 60 && maxc > 140) return 119;                // 'w'
+  if (sat >= 30) {
+    const secondR = g > b ? g : b;
+    const secondB = r > g ? r : g;
+    if (r === maxc && r > 90 && r - secondR >= 25) return 114; // 'r'
+    if (b === maxc && b > 90 && b - secondB >= 25) return 98;  // 'b'
+  }
+  if (maxc > 175 && sat < 95) return 119;                // 'w' 亮而略帶色偏
+  return 111;                                            // 'o'
 }
 function isGlyphBg(code) { return code === 119 || code === 114 || code === 98; }
 
-// 在影像資料中找字元格子（對應 _findGlyphCells）
-function findCells(data, W, H) {
-  // 每列是否含字形背景
-  const rowHas = new Uint8Array(H);
+// 找出所有字形水平帶（band），過濾過矮雜訊帶
+function findBands(data, W, H) {
+  let bands = [], top = -1;
   for (let y = 0; y < H; y++) {
     let has = 0;
     for (let x = 0; x < W; x++) {
       const i = (y * W + x) * 4;
       if (isGlyphBg(cls(data[i], data[i + 1], data[i + 2]))) { has = 1; break; }
     }
-    rowHas[y] = has;
-  }
-  // 取最高 band
-  let bands = [], top = -1;
-  for (let y = 0; y < H; y++) {
-    if (rowHas[y] && top < 0) top = y;
-    else if (!rowHas[y] && top >= 0) { bands.push([top, y - 1]); top = -1; }
+    if (has && top < 0) top = y;
+    else if (!has && top >= 0) { bands.push([top, y - 1]); top = -1; }
   }
   if (top >= 0) bands.push([top, H - 1]);
-  if (!bands.length) return [];
-  let band = bands[0];
-  for (const b of bands) if (b[1] - b[0] > band[1] - band[0]) band = b;
-  const bt = band[0], bh = band[1] - band[0] + 1;
+  return bands.filter(b => (b[1] - b[0] + 1) >= 12)
+    .sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]));
+}
 
-  // band 內的直向 runs
+// 將指定 band 切成字元格子
+function cellsForBand(data, W, band) {
+  const bt = band[0], bh = band[1] - band[0] + 1;
   let runs = [], left = -1;
   for (let x = 0; x < W; x++) {
     let has = 0;
@@ -146,16 +150,16 @@ function findCells(data, W, H) {
     else if (!has && left >= 0) { runs.push([left, x - 1]); left = -1; }
   }
   if (left >= 0) runs.push([left, W - 1]);
-
   const cells = [];
   for (const run of runs) {
     const rw = run[1] - run[0] + 1;
+    if (rw < 3) continue;
     const count = Math.max(1, Math.floor((rw + (bh >> 1)) / bh));
     const cw = Math.floor(rw / count);
     for (let k = 0; k < count; k++) {
       const x0 = run[0] + k * cw;
       const w = (k === count - 1) ? (run[1] - x0 + 1) : cw;
-      if (w > 2) cells.push({ x: x0, y: bt, w, h: bh });
+      cells.push({ x: x0, y: bt, w, h: bh });
     }
   }
   return cells;
@@ -165,7 +169,6 @@ function matchCell(src, sx, sy, sw, sh) {
   cctx.clearRect(0, 0, 48, 48);
   cctx.drawImage(src, sx, sy, sw, sh, 0, 0, 48, 48);
   const d = cctx.getImageData(0, 0, 48, 48).data;
-  // 量化成字元碼字串比對
   const buf = new Array(2304);
   for (let p = 0, j = 0; p < d.length; p += 4, j++) {
     buf[j] = cls(d[p], d[p + 1], d[p + 2]);
@@ -178,25 +181,35 @@ function matchCell(src, sx, sy, sw, sh) {
     const score = match / 2304;
     if (score > best) { best = score; bestIdx = t; }
   }
-  if (best < 0.55 || bestIdx < 0) return "";
-  return ALPHABET[bestIdx];
+  if (best < 0.52 || bestIdx < 0) return { ch: "", score: 0 };
+  return { ch: ALPHABET[bestIdx], score: best };
 }
 
 function recognize() {
   const vw = video.videoWidth, vh = video.videoHeight;
   if (!vw || !vh) return "";
-  // 下採樣到寬 480
   const scale = 480 / vw;
   const W = 480, H = Math.round(vh * scale);
   work.width = W; work.height = H;
   wctx.drawImage(video, 0, 0, W, H);
-  // 取中央 50% 高度（對應取景框）
   const cropY = Math.round(H * 0.25), cropH = Math.round(H * 0.5);
   const data = wctx.getImageData(0, cropY, W, cropH).data;
-  const cells = findCells(data, W, cropH);
-  let out = "";
-  for (const c of cells) out += matchCell(work, c.x, cropY + c.y, c.w, c.h);
-  return out;
+  const bands = findBands(data, W, cropH);
+  if (!bands.length) return "";
+  // 嘗試前幾個 band，挑長度合理且平均分數最高者
+  let fallback = "", best = "", bestScore = 0;
+  for (const band of bands.slice(0, 4)) {
+    let out = "", sum = 0, n = 0;
+    for (const c of cellsForBand(data, W, band)) {
+      const m = matchCell(work, c.x, cropY + c.y, c.w, c.h);
+      if (m.ch) { out += m.ch; sum += m.score; n++; }
+    }
+    if (!out) continue;
+    if (!fallback) fallback = out;
+    const avg = n ? sum / n : 0;
+    if (out.length >= 4 && out.length <= 10 && avg > bestScore) { best = out; bestScore = avg; }
+  }
+  return best || fallback;
 }
 
 async function genPassword(hint) {
@@ -228,12 +241,17 @@ async function tick() {
   let hint;
   try { hint = recognize(); } catch { return; }
   if (hint.length < 4 || hint.length > 10) return;
-  // 連續兩幀一致才採用
-  if (hint === candidate) candCount++; else { candidate = hint; candCount = 1; }
-  if (candCount < 2) return;
-  if (hint === lastHint) return;
-  lastHint = hint;
-  hintlineEl.textContent = "提示碼：" + hint;
+  // 滑動視窗投票：窗內出現次數最多且達門檻者才採用
+  recent.push(hint);
+  if (recent.length > WINDOW) recent.shift();
+  const counts = {};
+  for (const h of recent) counts[h] = (counts[h] || 0) + 1;
+  let chosen = "", chosenCount = 0;
+  for (const k in counts) if (counts[k] > chosenCount) { chosenCount = counts[k]; chosen = k; }
+  if (chosenCount < NEED) return;
+  if (chosen === lastHint) return;
+  lastHint = chosen;
+  hintlineEl.textContent = "提示碼：" + chosen;
   recompute();
 }
 
@@ -243,7 +261,7 @@ pwEl.addEventListener("click", () => {
   navigator.clipboard?.writeText(t);
   noteEl.textContent = "已複製 " + t;
 });
-campEl.addEventListener("input", () => { lastHint = ""; candidate = ""; candCount = 0; });
+campEl.addEventListener("input", () => { lastHint = ""; recent = []; });
 
 async function start() {
   const errEl = document.getElementById("startErr");
